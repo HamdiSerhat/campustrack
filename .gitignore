@@ -1,0 +1,42 @@
+# Runtime dependencies and editor state
+node_modules/
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
+
+# Credentials and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Personal imports, exports, backups and source documents
+work/
+outputs/
+private/
+private-input/
+data/
+backups/
+sources/
+campustrack_import.json
+campustrack_veri_paketi*
+CampusTrack-*.json
+*before-import*.json
+*recovery*.txt
+attendance_records.*
+attendance_summary.*
+*.csv
+*.pdf
+*.docx
+*.zip
+AKTARIM_*.md
+DEVAM_NOTU.md
+aktarim-*.jpg
+screenshots/private/
+
+# Generated reports and coverage
+coverage/
+.nyc_output/

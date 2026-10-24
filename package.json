@@ -1,0 +1,12 @@
+{
+  "name": "campustrack",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A browser-local university attendance manager and AI-assisted learning project.",
+  "scripts": {
+    "start": "node server.cjs",
+    "test": "node --test tests/model.test.cjs tests/backup.test.cjs tests/university.test.cjs",
+    "check": "node --check app.js && node --check engine.js && node --check university-import.js && node --check server.cjs"
+  },
+  "engines": { "node": ">=20" }
+}
