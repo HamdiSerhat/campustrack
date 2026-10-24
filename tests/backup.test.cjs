@@ -1,0 +1,13 @@
+const {test}=require('node:test'),assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs'),crypto=require('node:crypto');
+const elements=new Map();const element=()=>({innerHTML:'',textContent:'',className:'',style:{},classList:{add(){},remove(){}}});
+const document={documentElement:{dataset:{}},body:element(),activeElement:null,addEventListener(){},querySelector(sel){if(!elements.has(sel))elements.set(sel,element());return elements.get(sel)}};
+const storage=new Map(),localStorage={getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)};
+const context={CampusEngine:require('../engine.js'),CampusUniversity:require('../university-import.js'),crypto,document,localStorage,sessionStorage:localStorage,location:{hash:''},window:{addEventListener(){}},setInterval(){},setTimeout(){},clearTimeout(){},console};
+let source=fs.readFileSync('app.js','utf8');source=source.replace('render();setInterval(', 'globalThis.testing={validate,initial,esc,validHours,ruleRow,btn};render();setInterval(');vm.createContext(context);vm.runInContext(source,context);const api=context.testing;
+const copy=v=>JSON.parse(JSON.stringify(v));
+test('Fresh workspace roundtrips and has no invented regulations or schedules',()=>{const original=api.initial(),restored=api.validate(copy(original));assert.equal(restored.courses.length,5);assert.ok(restored.courses.every(c=>c.required===null&&c.schedule.length===0&&!c.start&&!c.end));assert.deepEqual(copy(restored),copy(original))});
+test('Rejects duplicate course IDs and HTML injected through imported IDs',()=>{const v=copy(api.initial());v.courses[1].id=v.courses[0].id;assert.throws(()=>api.validate(v));v.courses[1].id='bad" onmouseover="alert(1)';assert.throws(()=>api.validate(v))});
+test('Rejects orphan sessions, malformed dates, and invalid hours or attendance status',()=>{const v=copy(api.initial()),id=v.courses[0].id,s={id:'s1',courseId:id,date:'2026-10-23',time:'09:00',hours:1.5,status:'present',note:'',type:'lab',generated:false};v.sessions=[s];assert.doesNotThrow(()=>api.validate(v));for(const patch of [{courseId:'unknown'},{hours:-1},{hours:.333},{date:'2026-02-30'},{status:'maybe'},{time:'25:00'}]){v.sessions=[{...s,...patch}];assert.throws(()=>api.validate(v))}});
+test('Rejects invalid timetable ranges and protects notes from HTML rendering',()=>{const v=copy(api.initial());v.calendar={start:21,end:8};assert.throws(()=>api.validate(v));assert.equal(api.esc('<img src=x onerror="alert(1)">'),'&lt;img src=x onerror=&quot;alert(1)&quot;&gt;')});
+test('Non-submit action buttons do not accidentally submit course forms',()=>{assert.match(api.btn('Add','add-rule'),/type="button"/);assert.match(api.ruleRow(),/type="button"/)})
+
